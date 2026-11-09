@@ -1,0 +1,428 @@
+{
+  "schema": 1,
+  "reasons": [
+    {
+      "id": "accumulate",
+      "label": "합계를 쌓아 가는 칸이라서"
+    },
+    {
+      "id": "count",
+      "label": "개수를 세어 가는 칸이라서"
+    },
+    {
+      "id": "loop",
+      "label": "다음 차례로 넘어가는 칸이라서"
+    },
+    {
+      "id": "once",
+      "label": "처음부터 한 번만 적는 칸이라서"
+    }
+  ],
+  "items": [
+    {
+      "id": "memo",
+      "title": "메모 칸",
+      "story": "메모 칸에 이 주문 금액 8,000을 적고, 그 값을 오늘 매출에 더했어요. 그다음 같은 칸을 지우고 대기 시간 4(분)를 적어 손님에게 알렸어요.",
+      "trail": [
+        "8,000 (주문 금액)",
+        "4 (대기 시간)"
+      ],
+      "question": "메모 칸을 어떻게 할까요?",
+      "options": [
+        {
+          "id": "split",
+          "label": "뜻마다 칸을 나눠요"
+        },
+        {
+          "id": "keep",
+          "label": "그대로 둬요"
+        }
+      ],
+      "answer": "split",
+      "feedback": {
+        "split": "맞아요. 한 칸이 금액과 대기 시간을 번갈아 맡고 있었어요.",
+        "keep": "적을 때마다 뜻이 달라요. 금액과 대기 시간은 쌓거나 세는 값도 아니에요."
+      },
+      "followUp": {
+        "type": "names",
+        "prompt": "새 칸 두 개의 이름을 골라 주세요.",
+        "slots": [
+          {
+            "id": "first",
+            "forValue": "8,000",
+            "options": [
+              {
+                "id": "amount",
+                "label": "주문 금액"
+              },
+              {
+                "id": "memo-1",
+                "label": "메모 1"
+              },
+              {
+                "id": "number",
+                "label": "숫자"
+              }
+            ],
+            "answer": "amount"
+          },
+          {
+            "id": "second",
+            "forValue": "4",
+            "options": [
+              {
+                "id": "wait",
+                "label": "대기 시간(분)"
+              },
+              {
+                "id": "memo-2",
+                "label": "메모 2"
+              },
+              {
+                "id": "placeholder",
+                "label": "임시"
+              }
+            ],
+            "answer": "wait"
+          }
+        ],
+        "feedback": {
+          "correct": "이름만 보고도 무엇을 적는 칸인지 알 수 있어요.",
+          "wrong": "‘메모 1’, ‘숫자’, ‘임시’ 같은 이름은 순서나 모양만 알려 줘요. 무엇을 적는 칸인지 드러나는 이름을 골라 보세요."
+        }
+      },
+      "explain": "한 칸이 두 뜻을 맡으면, 지금 값이 무슨 뜻인지 알려고 앞의 과정을 다시 따라가야 해요."
+    },
+    {
+      "id": "today-sales",
+      "title": "오늘 매출",
+      "story": "주문이 끝날 때마다 마감 보드의 오늘 매출에 그 주문 금액을 더해요.",
+      "trail": [
+        "0원",
+        "8,000원",
+        "12,500원",
+        "27,500원"
+      ],
+      "question": "오늘 매출 칸을 어떻게 할까요?",
+      "options": [
+        {
+          "id": "split",
+          "label": "뜻마다 칸을 나눠요"
+        },
+        {
+          "id": "keep",
+          "label": "그대로 둬요"
+        }
+      ],
+      "answer": "keep",
+      "feedback": {
+        "keep": "맞아요. 여러 번 고쳐 적어도 늘 ‘지금까지의 매출’이에요.",
+        "split": "나누면 합계를 이어 갈 칸이 없어져요. 쌓아 가는 칸은 여러 번 적는 게 원래 일이에요."
+      },
+      "followUp": {
+        "type": "reason",
+        "prompt": "왜 그대로 둘까요?",
+        "accept": [
+          "accumulate"
+        ],
+        "feedback": {
+          "correct": "합계를 쌓아 가는 칸이에요.",
+          "wrong": "이 칸은 주문 금액을 계속 더해 가요. 무엇을 하는 칸인지 다시 볼까요?"
+        }
+      },
+      "explain": "값을 모아 가는 칸은 예외예요. 적는 횟수가 많아도 뜻은 하나예요."
+    },
+    {
+      "id": "ordered-cups",
+      "title": "받은 잔 수",
+      "story": "단체 주문서에 라테 5잔과 쿠폰 1장이 적혀 왔어요. 결제할 잔 수 4를 어디에 적을지 정해야 해요.",
+      "trail": [
+        "받은 잔 수 5",
+        "쿠폰 1장"
+      ],
+      "question": "결제할 잔 수 4는 어디에 적을까요?",
+      "options": [
+        {
+          "id": "overwrite",
+          "label": "받은 잔 수 5를 지우고 그 자리에 적어요"
+        },
+        {
+          "id": "new-slot",
+          "label": "5는 그대로 두고, 새 칸에 적어요"
+        },
+        {
+          "id": "memo",
+          "label": "메모 칸에 적었다가 나중에 다른 것도 적어요"
+        }
+      ],
+      "answer": "new-slot",
+      "feedback": {
+        "new-slot": "맞아요. 받은 값은 그대로 두고, 바꾼 값은 새 칸에 담아요.",
+        "overwrite": "5를 지우면 손님이 주문한 잔 수가 사라져요. 만드는 동료가 4잔만 만들 수도 있어요.",
+        "memo": "그러면 메모 칸이 또 두 가지 뜻을 맡게 돼요. 처음에 본 바로 그 냄새예요."
+      },
+      "followUp": {
+        "type": "names",
+        "prompt": "새 칸의 이름을 골라 주세요.",
+        "slots": [
+          {
+            "id": "paid",
+            "forValue": "4",
+            "options": [
+              {
+                "id": "paid-cups",
+                "label": "결제 잔 수"
+              },
+              {
+                "id": "cups-2",
+                "label": "잔 수 2"
+              },
+              {
+                "id": "fixed",
+                "label": "고친 값"
+              }
+            ],
+            "answer": "paid-cups"
+          }
+        ],
+        "feedback": {
+          "correct": "받은 잔 수와 결제 잔 수가 나란히 보여요.",
+          "wrong": "‘잔 수 2’, ‘고친 값’은 무엇을 위한 숫자인지 말해 주지 않아요."
+        }
+      },
+      "explain": "함수가 받은 값(매개변수)도 마찬가지예요. 다시 대입하지 말고 새 이름에 담아요."
+    },
+    {
+      "id": "buzzer-table",
+      "title": "번호 칸",
+      "story": "번호 칸에 진동벨 번호 12를 적어 두었다가, 손님이 자리에 앉자 같은 칸을 지우고 테이블 번호 3을 적었어요.",
+      "trail": [
+        "12 (진동벨 번호)",
+        "3 (테이블 번호)"
+      ],
+      "question": "번호 칸을 어떻게 할까요?",
+      "options": [
+        {
+          "id": "split",
+          "label": "뜻마다 칸을 나눠요"
+        },
+        {
+          "id": "keep",
+          "label": "그대로 둬요"
+        }
+      ],
+      "answer": "split",
+      "feedback": {
+        "split": "맞아요. 둘 다 숫자라서 더 헷갈려요. 진동벨과 테이블은 서로 다른 것을 가리켜요.",
+        "keep": "둘 다 ‘번호’처럼 보여도 뜻이 달라요. 12번 진동벨과 3번 테이블은 다른 것이에요."
+      },
+      "followUp": {
+        "type": "names",
+        "prompt": "새 칸 두 개의 이름을 골라 주세요.",
+        "slots": [
+          {
+            "id": "first",
+            "forValue": "12",
+            "options": [
+              {
+                "id": "buzzer",
+                "label": "진동벨 번호"
+              },
+              {
+                "id": "number-1",
+                "label": "번호 1"
+              },
+              {
+                "id": "first-number",
+                "label": "처음 숫자"
+              }
+            ],
+            "answer": "buzzer"
+          },
+          {
+            "id": "second",
+            "forValue": "3",
+            "options": [
+              {
+                "id": "table",
+                "label": "테이블 번호"
+              },
+              {
+                "id": "number-2",
+                "label": "번호 2"
+              },
+              {
+                "id": "new-number",
+                "label": "새 숫자"
+              }
+            ],
+            "answer": "table"
+          }
+        ],
+        "feedback": {
+          "correct": "칸 이름이 무엇을 가리키는지 말해 줘요.",
+          "wrong": "순서를 붙인 이름은 뜻을 알려 주지 않아요. 무엇의 번호인지 드러나게 골라 보세요."
+        }
+      },
+      "explain": "모양이 같은 값(숫자와 숫자)이 번갈아 들어갈수록 실수를 알아채기 어려워요."
+    },
+    {
+      "id": "cups-made",
+      "title": "만든 잔 수",
+      "story": "음료를 내보낼 때마다 만든 잔 수에 그 주문의 잔 수를 더해요.",
+      "trail": [
+        "0잔",
+        "2잔",
+        "3잔",
+        "6잔"
+      ],
+      "question": "만든 잔 수 칸을 어떻게 할까요?",
+      "options": [
+        {
+          "id": "split",
+          "label": "뜻마다 칸을 나눠요"
+        },
+        {
+          "id": "keep",
+          "label": "그대로 둬요"
+        }
+      ],
+      "answer": "keep",
+      "feedback": {
+        "keep": "맞아요. 늘 ‘지금까지 만든 잔 수’예요.",
+        "split": "나누면 몇 잔을 만들었는지 이어서 셀 수 없어요."
+      },
+      "followUp": {
+        "type": "reason",
+        "prompt": "왜 그대로 둘까요?",
+        "accept": [
+          "count",
+          "accumulate"
+        ],
+        "feedback": {
+          "correct": "개수를 쌓아 가는 칸이에요. 합계를 쌓는 칸과 같은 부류예요.",
+          "wrong": "이 칸은 잔 수를 계속 더해 가요. 무엇을 하는 칸인지 다시 볼까요?"
+        }
+      },
+      "explain": "세는 칸도 값을 모아 가는 칸이에요. 여러 번 적어도 그대로 둬요."
+    },
+    {
+      "id": "syrup",
+      "title": "시럽 칸",
+      "story": "주문을 받을 때 시럽 칸에 ‘바닐라 2펌프’를 적고, 음료를 만들 때 그 칸을 두 번 확인해요. 고쳐 적지는 않아요.",
+      "trail": [
+        "바닐라 2펌프"
+      ],
+      "question": "시럽 칸을 어떻게 할까요?",
+      "options": [
+        {
+          "id": "split",
+          "label": "뜻마다 칸을 나눠요"
+        },
+        {
+          "id": "keep",
+          "label": "그대로 둬요"
+        }
+      ],
+      "answer": "keep",
+      "feedback": {
+        "keep": "맞아요. 한 번만 적고 읽기만 해요. 이미 한 칸에 한 가지 뜻이에요.",
+        "split": "한 번만 적는 칸에는 나눌 뜻이 없어요. 여러 번 읽는 것은 괜찮아요."
+      },
+      "followUp": {
+        "type": "reason",
+        "prompt": "왜 그대로 둘까요?",
+        "accept": [
+          "once"
+        ],
+        "feedback": {
+          "correct": "처음부터 한 번만 적는 칸이에요.",
+          "wrong": "이 칸은 쌓거나 세지 않아요. 몇 번 적는지 다시 볼까요?"
+        }
+      },
+      "explain": "읽는 횟수는 상관없어요. 기준은 적을 때마다 뜻이 바뀌는지예요."
+    },
+    {
+      "id": "current-order",
+      "title": "지금 보는 주문",
+      "story": "마감할 때 주문표를 한 장씩 넘겨 봐요. 지금 보는 주문이 차례대로 바뀌어요.",
+      "trail": [
+        "아메리카노",
+        "라테",
+        "바닐라 라테"
+      ],
+      "question": "지금 보는 주문 칸을 어떻게 할까요?",
+      "options": [
+        {
+          "id": "split",
+          "label": "뜻마다 칸을 나눠요"
+        },
+        {
+          "id": "keep",
+          "label": "그대로 둬요"
+        }
+      ],
+      "answer": "keep",
+      "feedback": {
+        "keep": "맞아요. 계속 바뀌어도 늘 ‘이번 차례의 주문’이에요.",
+        "split": "차례마다 새 칸을 만들면 주문표가 늘 때마다 칸도 늘려야 해요."
+      },
+      "followUp": {
+        "type": "reason",
+        "prompt": "왜 그대로 둘까요?",
+        "accept": [
+          "loop"
+        ],
+        "feedback": {
+          "correct": "다음 차례로 넘어가는 칸, 반복 변수예요.",
+          "wrong": "이 칸은 주문표를 한 장씩 넘길 때마다 바뀌어요. 무엇을 하는 칸인지 다시 볼까요?"
+        }
+      },
+      "explain": "반복 변수는 예외예요. 바퀴마다 값이 바뀌는 게 원래 일이에요."
+    }
+  ],
+  "draft": {
+    "storageKey": "split-variable-tutorial:practice-draft:v1",
+    "schema": 1,
+    "noteMaxLength": 300,
+    "shape": {
+      "schema": "number, always 1",
+      "answers": "object keyed by item id; each value is {option: option id or null, names: {slot id: name option id}, reason: reason id or null}",
+      "note": "string, at most noteMaxLength characters",
+      "savedAt": "ISO 8601 date string set when the save succeeds"
+    }
+  },
+  "copy": {
+    "noteLabel": "나의 정리 메모 (선택)",
+    "notePlaceholder": "오늘 배운 기준을 한 줄로 적어 보세요.",
+    "noteCounter": "{n} / {max}자",
+    "check": "채점하기",
+    "save": "임시 저장",
+    "reset": "처음부터 다시",
+    "next": "코드로 보기",
+    "followUpNames": "새 칸 이름",
+    "followUpReason": "그대로 두는 이유",
+    "saving": "저장하는 중…",
+    "saved": "임시 저장했어요",
+    "savedAt": "{time}에 저장",
+    "unsaved": "저장하지 않은 변경이 있어요",
+    "saveError": "저장하지 못했어요. 고른 답은 화면에 그대로 있어요. 다시 시도해 주세요.",
+    "restored": "저장한 답을 불러왔어요.",
+    "loadError": "저장한 답을 읽지 못했어요. 저장된 내용은 지우지 않았고, 새로 풀 수는 있어요.",
+    "storageUnavailable": "이 브라우저에서는 저장을 쓸 수 없어요. 풀이는 그대로 할 수 있어요.",
+    "resetConfirmTitle": "고른 답과 메모를 모두 지울까요?",
+    "resetConfirmBody": "저장한 답도 함께 지워져요.",
+    "resetYes": "지우기",
+    "resetNo": "취소",
+    "unanswered": "아직 고르지 않은 문제가 {n}개 있어요.",
+    "score": "{total}문제 중 {correct}문제를 맞혔어요.",
+    "scorePerfect": "모두 맞혔어요! 한 칸에 한 가지 뜻, 이제 눈에 보이죠?",
+    "scoreRetry": "틀린 문제는 설명을 읽고 다시 골라 보세요.",
+    "correctTag": "정답",
+    "wrongTag": "다시 보기",
+    "itemLabel": "문제 {n}",
+    "trailLabel": "칸에 적힌 값",
+    "slotLegend": "값 {value}의 새 칸 이름",
+    "resultTitle": "채점 결과"
+  }
+}

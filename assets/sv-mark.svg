@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>SPLIT / VARIABLE</title>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#a4441f"/>
+  <rect x="9" y="21" width="20" height="22" rx="5" fill="none" stroke="#fff4e6" stroke-width="3" stroke-dasharray="4 3"/>
+  <path d="M30 32h5c3 0 4-2 5-5l2-5M35 32c3 0 4 2 5 5l2 5" fill="none" stroke="#fff4e6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="41" y="10" width="15" height="15" rx="4" fill="#fff4e6"/>
+  <rect x="41" y="39" width="15" height="15" rx="4" fill="#ffc98f"/>
+</svg>

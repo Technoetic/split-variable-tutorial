@@ -1,0 +1,179 @@
+{
+  "schema": 1,
+  "examples": [
+    {
+      "id": "main",
+      "title": "마감 계산",
+      "summary": "오늘 주문으로 매출, 만든 잔 수, 대기 안내를 만들어요.",
+      "stages": [
+        {
+          "id": "before",
+          "label": "변경 전",
+          "source": "const todayOrders = [\n  { menu: '아메리카노', price: 4000, cups: 2 },\n  { menu: '라테', price: 4500, cups: 1 },\n  { menu: '바닐라 라테', price: 5000, cups: 3 },\n];\n\nfunction closeDay(orders) {\n  let todaySales = 0; // 오늘 매출: 쌓아 가는 칸\n  let cupsMade = 0; // 만든 잔 수: 세어 가는 칸\n  const waits = [];\n  for (const order of orders) {\n    let memo = order.price * order.cups; // 메모 칸 = 이 주문 금액\n    todaySales += memo;\n    cupsMade += order.cups;\n    memo = order.cups * 2; // 같은 메모 칸 = 대기 시간(분)\n    waits.push(memo + '분');\n  }\n  return `매출 ${todaySales}원 · ${cupsMade}잔 · 대기 ${waits.join(', ')}`;\n}\n\nconsole.log(closeDay(todayOrders));\n",
+          "expectedOutput": [
+            "매출 27500원 · 6잔 · 대기 4분, 2분, 6분"
+          ],
+          "marks": [
+            {
+              "line": 8,
+              "contains": "let todaySales",
+              "kind": "keep",
+              "note": "쌓아 가는 칸이라 그대로 둬요"
+            },
+            {
+              "line": 9,
+              "contains": "let cupsMade",
+              "kind": "keep",
+              "note": "세어 가는 칸이라 그대로 둬요"
+            },
+            {
+              "line": 11,
+              "contains": "for (const order of orders)",
+              "kind": "keep",
+              "note": "반복 변수: 바퀴마다 다음 주문"
+            },
+            {
+              "line": 12,
+              "contains": "let memo = order.price",
+              "kind": "smell",
+              "note": "메모 칸에 ① 주문 금액을 적어요"
+            },
+            {
+              "line": 15,
+              "contains": "memo = order.cups * 2",
+              "kind": "smell",
+              "note": "같은 칸에 ② 대기 시간을 덧써요"
+            }
+          ]
+        },
+        {
+          "id": "midway",
+          "label": "2·3단계 후",
+          "source": "const todayOrders = [\n  { menu: '아메리카노', price: 4000, cups: 2 },\n  { menu: '라테', price: 4500, cups: 1 },\n  { menu: '바닐라 라테', price: 5000, cups: 3 },\n];\n\nfunction closeDay(orders) {\n  let todaySales = 0; // 오늘 매출: 쌓아 가는 칸\n  let cupsMade = 0; // 만든 잔 수: 세어 가는 칸\n  const waits = [];\n  for (const order of orders) {\n    const orderAmount = order.price * order.cups; // 주문 금액\n    todaySales += orderAmount;\n    cupsMade += order.cups;\n    let memo = order.cups * 2; // 메모 칸은 이제 대기 시간만 맡아요\n    waits.push(memo + '분');\n  }\n  return `매출 ${todaySales}원 · ${cupsMade}잔 · 대기 ${waits.join(', ')}`;\n}\n\nconsole.log(closeDay(todayOrders));\n",
+          "expectedOutput": [
+            "매출 27500원 · 6잔 · 대기 4분, 2분, 6분"
+          ],
+          "showInCodeView": false,
+          "marks": [
+            {
+              "line": 12,
+              "contains": "const orderAmount",
+              "kind": "new",
+              "note": "주문 금액만 담는 새 칸"
+            },
+            {
+              "line": 13,
+              "contains": "todaySales += orderAmount",
+              "kind": "new",
+              "note": "읽는 곳도 새 이름으로"
+            },
+            {
+              "line": 15,
+              "contains": "let memo = order.cups * 2",
+              "kind": "smell",
+              "note": "메모 칸은 이제 대기 시간만 맡아요"
+            }
+          ]
+        },
+        {
+          "id": "after",
+          "label": "변경 후",
+          "source": "const todayOrders = [\n  { menu: '아메리카노', price: 4000, cups: 2 },\n  { menu: '라테', price: 4500, cups: 1 },\n  { menu: '바닐라 라테', price: 5000, cups: 3 },\n];\n\nfunction closeDay(orders) {\n  let todaySales = 0; // 오늘 매출: 쌓아 가는 칸\n  let cupsMade = 0; // 만든 잔 수: 세어 가는 칸\n  const waits = [];\n  for (const order of orders) {\n    const orderAmount = order.price * order.cups; // 주문 금액\n    todaySales += orderAmount;\n    cupsMade += order.cups;\n    const waitMinutes = order.cups * 2; // 대기 시간(분)\n    waits.push(waitMinutes + '분');\n  }\n  return `매출 ${todaySales}원 · ${cupsMade}잔 · 대기 ${waits.join(', ')}`;\n}\n\nconsole.log(closeDay(todayOrders));\n",
+          "expectedOutput": [
+            "매출 27500원 · 6잔 · 대기 4분, 2분, 6분"
+          ],
+          "marks": [
+            {
+              "line": 12,
+              "contains": "const orderAmount",
+              "kind": "new",
+              "note": "주문 금액만 담는 칸"
+            },
+            {
+              "line": 13,
+              "contains": "todaySales += orderAmount",
+              "kind": "keep",
+              "note": "쌓아 가는 칸은 그대로"
+            },
+            {
+              "line": 14,
+              "contains": "cupsMade += order.cups",
+              "kind": "keep",
+              "note": "세어 가는 칸도 그대로"
+            },
+            {
+              "line": 15,
+              "contains": "const waitMinutes",
+              "kind": "new",
+              "note": "대기 시간만 담는 칸"
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "id": "step2-only",
+          "note": "Applying only the step 2 edits to the before stage must throw ReferenceError (old slot read before its new let declaration). Supports the step 4 codeNote.",
+          "baseStage": "before",
+          "applySteps": [
+            2
+          ],
+          "expectError": "ReferenceError"
+        }
+      ]
+    },
+    {
+      "id": "parameter",
+      "title": "받은 값 지키기",
+      "summary": "쿠폰을 뺀 결제 잔 수로 영수증 한 줄을 만들어요.",
+      "stages": [
+        {
+          "id": "before",
+          "label": "변경 전",
+          "source": "function receiptLine(orderedCups, coupons, price) {\n  orderedCups = Math.max(orderedCups - coupons, 0); // 받은 잔 수를 덮어씀\n  return `결제 ${orderedCups}잔 × ${price}원 = ${orderedCups * price}원`;\n}\n\nconsole.log(receiptLine(5, 1, 4500));\nconsole.log(receiptLine(2, 3, 4000));\n",
+          "expectedOutput": [
+            "결제 4잔 × 4500원 = 18000원",
+            "결제 0잔 × 4000원 = 0원"
+          ],
+          "marks": [
+            {
+              "line": 2,
+              "contains": "orderedCups = Math.max",
+              "kind": "smell",
+              "note": "받은 잔 수를 결제 잔 수로 덮어써요"
+            }
+          ]
+        },
+        {
+          "id": "after",
+          "label": "변경 후",
+          "source": "function receiptLine(orderedCups, coupons, price) {\n  const paidCups = Math.max(orderedCups - coupons, 0); // 받은 값은 그대로 두고 새 칸에\n  return `결제 ${paidCups}잔 × ${price}원 = ${paidCups * price}원`;\n}\n\nconsole.log(receiptLine(5, 1, 4500));\nconsole.log(receiptLine(2, 3, 4000));\n",
+          "expectedOutput": [
+            "결제 4잔 × 4500원 = 18000원",
+            "결제 0잔 × 4000원 = 0원"
+          ],
+          "marks": [
+            {
+              "line": 2,
+              "contains": "const paidCups",
+              "kind": "new",
+              "note": "받은 값은 그대로, 결제 잔 수는 새 칸에"
+            }
+          ]
+        }
+      ],
+      "checks": []
+    }
+  ],
+  "markKinds": {
+    "smell": {
+      "label": "뜻이 섞인 곳"
+    },
+    "new": {
+      "label": "새로 만든 칸"
+    },
+    "keep": {
+      "label": "그대로 두는 칸"
+    }
+  }
+}

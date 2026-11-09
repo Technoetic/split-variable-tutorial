@@ -1,0 +1,5 @@
+dist*/
+.test-build*/
+.previous-pages/
+node_modules/
+*.log
