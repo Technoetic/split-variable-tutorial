@@ -3,6 +3,14 @@ import {findExample,findStage,sameOutput} from '../tutorial/code-model.js';
 import {Screen} from './screen.js';
 import {codeBlock,outputView,pager,routeLink,screenHead} from './widgets.js';
 
+// One row of the cafe-to-code table. The code-side term is Korean text; only the
+// optional token (=, const, +=, for…of) is set in code font.
+const glossaryRow=row=>el('tr',{},[
+  el('th',{scope:'row',textContent:row.cafe}),
+  el('td',{},[row.code,row.token?[' ',el('code',{textContent:row.token})]:null]),
+  el('td',{textContent:row.note})
+]);
+
 // #/code?view=before|after|parameter. Each view is its own address, so a tab
 // switch is an ordinary navigation (and gets the same version check).
 export class CodeScreen extends Screen {
@@ -41,7 +49,7 @@ export class CodeScreen extends Screen {
         el('h2',{textContent:copy.mappingTitle}),
         el('table',{className:'mapping-table'},[
           el('thead',{},[el('tr',{},[ui.mappingHeaders.cafe,ui.mappingHeaders.code,ui.mappingHeaders.note].map(text=>el('th',{scope:'col',textContent:text})))]),
-          el('tbody',{},tutorial.glossary.map(row=>el('tr',{},[el('th',{scope:'row',textContent:row.cafe}),el('td',{},[el('code',{textContent:row.code})]),el('td',{textContent:row.note})])))
+          el('tbody',{},tutorial.glossary.map(glossaryRow))
         ])
       ]),
       el('ul',{className:'notes-list'},[copy.constNote,copy.loopNote,copy.scopeNote].map(text=>el('li',{textContent:text}))),

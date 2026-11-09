@@ -134,6 +134,29 @@ test('the code view query picks a tab and unknown views fall back to before',asy
   assert.deepEqual(legend((await mount('#/code?view=parameter')).root),['new','smell']);
 });
 
+test('the cafe-to-code table shows Korean terms as text and only code tokens in code font',async t=>{
+  const mount=setup(t);const {root}=await mount('#/code');
+  const rows=root.querySelectorAll('.mapping-table tbody tr');assert.equal(rows.length,tutorial.glossary.length);
+  // The shipped rows cover both shapes: with a token and without one.
+  assert.ok(tutorial.glossary.some(row=>row.token));assert.ok(tutorial.glossary.some(row=>!row.token));
+  rows.forEach((row,index)=>{
+    const entry=tutorial.glossary[index];const [cafe,term,note]=row.children;
+    assert.equal(text(cafe),entry.cafe);assert.equal(text(note),entry.note);
+    // The term is the cell's own text; the token, when there is one, is the only code element.
+    assert.equal(term.childNodes[0].nodeType,3,entry.cafe);assert.equal(term.childNodes[0].textContent,entry.code);
+    assert.deepEqual(term.querySelectorAll('code').map(node=>node.textContent),entry.token?[entry.token]:[],entry.cafe);
+    assert.equal(text(term),entry.token?entry.code+' '+entry.token:entry.code);
+  });
+  for(const node of root.querySelectorAll('.mapping-table code'))assert.doesNotMatch(node.textContent,/[가-힣]/);
+  // Data in the earlier shape (no token field) renders as plain text with no code font.
+  const earlier=structuredClone(tutorial);
+  earlier.glossary=[{cafe:'칸에 적기',code:'대입 (=)',note:'칸에 새 값을 넣는 일'},{cafe:'한 번만 적는 칸',code:'const 변수',note:'다시 대입하면 오류가 나요'}];
+  const content={calls:[],async load(name){return structuredClone(name==='tutorial'?earlier:data[name]);}};
+  const old=(await mount('#/code',{content})).root;
+  assert.equal(old.querySelectorAll('.mapping-table code').length,0);
+  assert.deepEqual(old.querySelectorAll('.mapping-table tbody tr').map(row=>text(row.children[1])),['대입 (=)','const 변수']);
+});
+
 test('a step screen marks its step and shows that step\'s code',async t=>{
   const mount=setup(t);
   const {root}=await mount('#/steps/3');

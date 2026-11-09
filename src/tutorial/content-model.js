@@ -41,6 +41,11 @@ const SLOT=(value,path)=>{
   else check(value.value,value.state==='empty'?TE(40):T(40),path+'.value');
   if(value.state==='overwritten'&&value.previous===undefined)fail(path+'.previous','overwritten slots keep the previous value');
 };
+// Glossary rows: the code-side term is Korean text and stays required (tabs still on
+// the previous build check it); the optional token is literal code shown in code font
+// (=, const, +=, for…of), so it never holds Korean words.
+const TOKEN=(value,path)=>{T(20)(value,path);if(/[가-힣]/.test(value))fail(path,'code token without Korean expected');};
+const GLOSSARY_ROW={cafe:T(40),code:T(40),token:opt(TOKEN),note:T(160)};
 const LINK={label:T(80),route:ROUTE};
 const BOARD={id:ID,label:T(40),value:T(40)};
 const EDIT={from:T(300),to:T(300)};
@@ -93,7 +98,7 @@ export function validateTutorial(value){
   check(value,{schema:oneOf(1),
     meta:{lang:oneOf('ko'),appTitle:T(80),htmlTitle:T(160),description:T(300),brand:{left:T(20),right:T(20)},tagline:T(120),footerMotto:T(120),footerSource:T(200),repository:ID,publicUrl:HTTPS,sourceUrl:HTTPS,citedAuthor:T(80)},
     routes:list({path:ROUTE,screen:T(40),step:opt(int(1,STEP_COUNT)),title:T(80),navLabel:nul(T(40)),prev:nul(ROUTE),next:nul(ROUTE)},1,40),
-    nav:list({path:ROUTE,label:T(40)},1,12),navPrimary:list(ROUTE,1,12),ui:UI,glossary:list({cafe:T(40),code:T(40),note:T(160)},1,20),screens:SCREENS},'tutorial');
+    nav:list({path:ROUTE,label:T(40)},1,12),navPrimary:list(ROUTE,1,12),ui:UI,glossary:list(GLOSSARY_ROW,1,20),screens:SCREENS},'tutorial');
   const routes=value.routes.map(route=>route.path);unique(routes,'tutorial.routes');
   for(const entry of ROUTE_TABLE){
     const route=value.routes.find(item=>item.path===entry.path);

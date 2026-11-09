@@ -84,6 +84,19 @@ test('shipped data passes the cross-file checks (routes, step edit chain, marks,
   ]){const copy=structuredClone(value);mutate(copy);assert.throws(()=>validate(copy),/Invalid content/);}
 });
 
+test('glossary rows keep a Korean term and take an optional code token without Korean',()=>{
+  assert.deepEqual(tutorial.glossary.filter(row=>row.token).map(row=>[row.code,row.token]),[['대입','='],['한 번만 대입하는 변수','const'],['누적 변수','+='],['반복 변수','for…of']]);
+  // The earlier row shape (no token; the term carried the code) still validates.
+  const earlier=structuredClone(tutorial);earlier.glossary=earlier.glossary.map(({token,...row})=>row);earlier.glossary[1].code='대입 (=)';
+  assert.doesNotThrow(()=>validateTutorial(earlier));
+  for(const token of ['변수','const 변수','',' ','x'.repeat(21),null,3]){
+    const copy=structuredClone(tutorial);copy.glossary[1].token=token;
+    assert.throws(()=>validateTutorial(copy),/Invalid content at tutorial\.glossary\[1\]\.token/,JSON.stringify(token));
+  }
+  const missing=structuredClone(tutorial);delete missing.glossary[0].code;
+  assert.throws(()=>validateTutorial(missing),/Invalid content at tutorial\.glossary\[0\]\.code/);
+});
+
 test('data routes match the app screen table and chain prev/next both ways',()=>{
   assert.deepEqual(tutorial.routes.map(route=>[route.path,route.screen,route.step??null]),ROUTE_TABLE.map(entry=>[entry.path,entry.screen,entry.step??null]));
   const byPath=new Map(tutorial.routes.map(route=>[route.path,route]));
