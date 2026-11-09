@@ -32,6 +32,17 @@ test('authored practice answers match the independent slot judgement',()=>{
   assert.throws(()=>decideSlot({writes:[]}));
 });
 
+test('a received value updated like a running total still gets a new slot',()=>{
+  // The parameter case in the cited first-edition summary: a parameter reduced in place still gets a new slot.
+  assert.deepEqual(decideSlot({writes:['받은 금액','할인 뒤 금액'],role:'accumulate',received:true}),{action:'new-slot',slots:1});
+  assert.deepEqual(decideSlot({writes:['지금까지의 합계','지금까지의 합계'],role:'accumulate',received:true}),{action:'new-slot',slots:1});
+  assert.deepEqual(decideSlot({writes:['지금까지의 합계','지금까지의 합계'],role:'accumulate'}),{action:'keep',reason:'accumulate'});
+  // The ordered rule on the exceptions screen must apply the received-value rule before keeping running totals.
+  const rules=tutorial.screens.exceptions.rule.items;
+  const received=rules.findIndex(text=>text.includes('받은 값'));const keep=rules.findIndex(text=>text.includes('그대로 둬요'));
+  assert.ok(received>=0&&keep>=0&&received<keep,JSON.stringify(rules));
+});
+
 test('an item is correct only with the right option and a right follow-up',()=>{
   const memo=item('memo'),sales=item('today-sales'),cups=item('cups-made');
   assert.equal(gradeItem(memo,emptyAnswer()).status,'unanswered');
@@ -44,7 +55,11 @@ test('an item is correct only with the right option and a right follow-up',()=>{
   assert.equal(gradeItem(sales,{option:'keep',names:{},reason:'accumulate'}).status,'correct');
   for(const reason of ['count','accumulate'])assert.equal(gradeItem(cups,{option:'keep',names:{},reason}).status,'correct');
   const answers=new Map([['memo',{option:'split',names:{first:'amount',second:'wait'},reason:null}],['syrup',{option:'keep',names:{},reason:null}],['buzzer-table',{option:'keep',names:{},reason:null}]]);
-  assert.deepEqual(summarize(practice,id=>answers.get(id)),{total:7,correct:1,unanswered:5});
+  assert.deepEqual(summarize(practice,id=>answers.get(id)),{total:7,correct:1,unanswered:5,wrong:1});
+  // A right main answer with the follow-up still open is unfinished, not wrong.
+  const open=new Map([['memo',{option:'split',names:{},reason:null}],['today-sales',{option:'keep',names:{},reason:'count'}]]);
+  assert.deepEqual(summarize(practice,id=>open.get(id)),{total:7,correct:0,unanswered:6,wrong:1});
+  assert.deepEqual(summarize(practice,()=>undefined),{total:7,correct:0,unanswered:7,wrong:0});
 });
 
 test('the practice session tracks unsaved changes against the last saved snapshot',()=>{
@@ -80,6 +95,9 @@ test('every code stage prints its expected output when run',()=>{
   const main=findExample(code,'main');
   assert.ok(sameOutput(findStage(main,'before').expectedOutput,findStage(main,'after').expectedOutput));
   assert.deepEqual(findStage(main,'before').expectedOutput,['매출 27500원 · 6잔 · 대기 4분, 2분, 6분']);
+  // The step 4 checkpoint quotes the printed line character for character.
+  const four=tutorial.screens.steps.items[3];assert.equal(four.code.stage,'midway');
+  for(const line of findStage(main,'midway').expectedOutput)assert.ok(four.check.includes(line),four.check);
 });
 
 test('replaying the step edits reproduces each named stage exactly',()=>{
@@ -117,4 +135,7 @@ test('JavaScript facts the tutorial relies on',()=>{
   assert.deepEqual(run('function f(cups){cups=cups-1;return cups;}let ordered=5;const paid=f(ordered);console.log(ordered,paid);'),['5 4']);
   assert.throws(()=>run('const total=1;total=2;'),error=>error.name==='TypeError');
   assert.deepEqual(run('const waits=[];waits.push(1);waits.push(2);console.log(waits.length);'),['2']);
+  // for…of makes a fresh const binding each turn; a counting for loop cannot use const.
+  assert.deepEqual(run('for (const order of [1,2,3]) console.log(order);'),['1','2','3']);
+  assert.throws(()=>run('for (const i = 0; i < 2; i++) {}'),error=>error.name==='TypeError');
 });

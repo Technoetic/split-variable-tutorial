@@ -2,9 +2,13 @@ import {el,icon,uniqueId} from '../shared/dom.js';
 import {fill} from '../shared/format.js';
 import {resolveFocus,resolveMarks,sourceLines} from '../tutorial/code-model.js';
 
+// The page is Korean; short labels without Hangul (the English eyebrows) are marked
+// English so screen readers switch voice.
+export const langOf=text=>/[가-힣]/.test(String(text))?null:'en';
+
 export function screenHead({eyebrow,title,lead},extra=[]){
   return el('header',{className:'screen-head'},[
-    el('p',{className:'eyebrow',textContent:eyebrow}),
+    el('p',{className:'eyebrow',lang:langOf(eyebrow),textContent:eyebrow}),
     el('h1',{textContent:title}),
     lead?el('p',{className:'lead',textContent:lead}):null,
     extra
@@ -101,6 +105,8 @@ export function codeBlock(source,{marks=[],focus=[],markKinds=null,ui,title=null
     el('pre',{className:'code-block'},[code]),
     notes.length?el('div',{className:'code-notes'},[el('p',{className:'label',textContent:ui.marksTitle}),el('ul',{},notes.map(([line,mark])=>el('li',{'data-mark':mark.kind},[
       el('span',{className:'note-line',textContent:fill(ui.lineLabel,{n:line})}),
+      // Line numbers in the block are hidden from screen readers, so the note carries the line's code.
+      el('code',{className:'visually-hidden',textContent:(lines[line-1]??'').trim()}),
       mark.label?el('span',{className:'note-kind',textContent:mark.label}):null,
       el('span',{className:'note-text',textContent:mark.note})
     ])))]):null

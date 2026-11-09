@@ -168,16 +168,18 @@
 .code-line { display: grid; grid-template-columns: 2.8em minmax(0, 1fr); padding-right: 12px; border-left: 3px solid transparent; }
 .code-line .ln { padding-right: .8em; color: var(--code-muted); text-align: right; user-select: none; }
 .code-line .lc { white-space: pre-wrap; overflow-wrap: anywhere; }
-.code-line[data-mark="smell"] { border-left-color: #ff9488; background: rgb(255 148 136 / 15%); }
-.code-line[data-mark="new"] { border-left-color: #7bd6a2; background: rgb(123 214 162 / 14%); }
-.code-line[data-mark="keep"] { border-left-color: #93c6ef; background: rgb(147 198 239 / 13%); }
-.code-line[data-mark="focus"] { border-left-color: #f2c46b; background: rgb(242 196 107 / 15%); }
+.code-line[data-mark="smell"] { border-left-color: var(--code-mark-smell); background: var(--code-mark-smell-tint); }
+.code-line[data-mark="new"] { border-left-color: var(--code-mark-new); background: var(--code-mark-new-tint); }
+.code-line[data-mark="keep"] { border-left-color: var(--code-mark-keep); background: var(--code-mark-keep-tint); }
+.code-line[data-mark="next"] { border-left-color: var(--code-mark-next); background: var(--code-mark-next-tint); }
+.code-line[data-mark="focus"] { border-left-color: var(--code-mark-focus); background: var(--code-mark-focus-tint); }
 .code-notes { display: grid; gap: 6px; }
 .code-notes ul { display: grid; gap: 6px; padding: 0; list-style: none; }
 .code-notes li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; padding-left: 10px; border-left: 3px solid var(--line-strong); font-size: 14px; }
 .code-notes li[data-mark="smell"] { border-color: var(--smell); }
 .code-notes li[data-mark="new"] { border-color: var(--new); }
 .code-notes li[data-mark="keep"] { border-color: var(--keep); }
+.code-notes li[data-mark="next"] { border-color: var(--accent); }
 .code-notes li[data-mark="focus"] { border-color: var(--warn); }
 .note-line { font-family: var(--mono); font-weight: 800; }
 .note-kind { color: var(--muted); font-size: 12px; font-weight: 800; }
@@ -247,6 +249,7 @@
 .mark-legend li[data-mark="smell"]::before { background: var(--smell); }
 .mark-legend li[data-mark="new"]::before { background: var(--new); }
 .mark-legend li[data-mark="keep"]::before { background: var(--keep); }
+.mark-legend li[data-mark="next"]::before { background: var(--accent); }
 .mapping { display: grid; gap: 12px; }
 .mapping-table { table-layout: fixed; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
 .mapping-table thead th { background: var(--surface-2); color: var(--muted); font-size: 13px; }
@@ -283,8 +286,10 @@
 .state-panel { display: grid; justify-items: start; gap: 14px; padding: 28px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface); }
 .state-panel[data-state="error"] { border-color: var(--smell); background: var(--smell-soft); }
 .spinner { width: 22px; height: 22px; border: 3px solid var(--line); border-top-color: var(--accent); border-radius: 50%; }
+/* Only in the static page: if the start-up script never runs, this hint appears after a delay (effects.css). */
+.slow-hint { color: var(--muted); font-size: 14px; visibility: hidden; }
 .modal { width: min(520px, calc(100% - 32px)); padding: 0; border: 0; border-radius: var(--radius-lg); background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
-.modal::backdrop { background: rgb(20 12 8 / 55%); }
+.modal::backdrop { background: var(--backdrop); }
 .modal-card { display: grid; gap: 12px; padding: 24px; }
 .modal-card h2 { font-size: 21px; line-height: 1.4; }
 .form-error { padding: 10px 12px; border-radius: var(--radius-sm); background: var(--smell-soft); color: var(--smell); font-weight: 800; }

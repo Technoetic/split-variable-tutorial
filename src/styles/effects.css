@@ -3,11 +3,14 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes ring { from { outline-color: transparent; outline-offset: 9px; } to { outline-color: var(--accent); outline-offset: 2px; } }
 @keyframes hero-split { from { opacity: 0; transform: translateX(-22px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes reveal { to { visibility: visible; } }
 
 .screen { animation: screen-enter .3s var(--ease) both; }
 /* Quick loads finish before the loading panel fades in, so it does not flash. */
 .state-panel[data-state="loading"] { animation: appear .2s ease .18s both; }
 .spinner { animation: spin .9s linear infinite; }
+/* No script needed: the delay still applies when motion is reduced (only durations shrink). */
+.slow-hint { animation: reveal 1ms linear 12s forwards; }
 .slot[data-highlight="true"] { animation: ring .6s var(--ease) both; }
 .hero-after .slot { animation: hero-split .7s var(--ease) .25s both; }
 .hero-after .slot + .slot { animation-delay: .45s; }

@@ -46,7 +46,12 @@ class SplitVariableApp {
     if(!screen.focusTarget?.())this.root.focus({preventScroll:true});
     if(!screen.keepsScroll)window.scrollTo({top:0,behavior:'instant'});
   }
-  update(){const banner=document.querySelector('#update-banner');banner.hidden=!this.version.pendingBuild;if(!banner.hidden)banner.textContent=SHELL.updateBanner;}
+  // The banner is a polite live region: its text changes only when the message does,
+  // so repeated checks (each move, focus, pageshow) do not announce it again.
+  update(){
+    const banner=document.querySelector('#update-banner');const text=this.version.pendingBuild?SHELL.updateBanner:'';
+    banner.hidden=!text;if(banner.textContent!==text)banner.textContent=text;
+  }
   toast(message){const node=document.querySelector('#toast');node.textContent=message;node.hidden=false;clearTimeout(this.toastTimer);this.toastTimer=setTimeout(()=>{node.hidden=true;},4500);}
   async protect({changed}){
     const dialog=document.querySelector('#guard-dialog'),error=document.querySelector('#guard-error');

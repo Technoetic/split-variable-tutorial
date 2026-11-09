@@ -70,6 +70,19 @@ test('hash routes keep queries, cannot escape the document and map to screens',(
   assert.equal(new Set(ROUTE_TABLE.map(entry=>entry.path)).size,ROUTE_TABLE.length);
 });
 
+test('route URLs keep their query in browsers without URLSearchParams.size',()=>{
+  const descriptor=Object.getOwnPropertyDescriptor(URLSearchParams.prototype,'size');assert.ok(descriptor);
+  delete URLSearchParams.prototype.size;
+  try{
+    assert.equal(new URLSearchParams('view=after').size,undefined);
+    assert.equal(routeUrl('/code?view=after','https://example.test/app/').hash,'#/code?view=after');
+    assert.equal(routeUrl('#/code?view=parameter','https://example.test/app/').hash,'#/code?view=parameter');
+    assert.equal(routeUrl('/practice?item=memo','https://example.test/app/').hash,'#/practice?item=memo');
+    assert.equal(routeUrl('/code?','https://example.test/app/').hash,'#/code');
+  }finally{Object.defineProperty(URLSearchParams.prototype,'size',descriptor);}
+  assert.equal(new URLSearchParams('view=after').size,1);
+});
+
 // These doubles model only browser-owned history/events; routing and version logic remain real.
 function browser(t,{hashes=['#/story','#/practice'],position=hashes.length-1,build='A01',fetcher,dirty=false,onProtect=async()=>false,onUpdate=()=>{}}={}){
   const events=new EventTarget();const document=new EventTarget();document.hidden=false;
@@ -99,6 +112,23 @@ test('changed clean links force a new document URL with a random query and the i
   const app=browser(t,{build:'B01'});await app.router.navigate('/steps/3');assert.equal(app.documents.length,1);
   const first=app.documents[0];assert.equal(first.kind,'assign');assert.equal(first.url.pathname,'/app/');assert.equal(first.url.hash,'#/steps/3');assert.ok(first.url.searchParams.get('_sv')?.startsWith('B01-'));
   await app.router.navigate('/code');assert.notEqual(app.documents[1].url.search,first.url.search);assert.equal(app.history.state.splitVariable.key,'session-one');
+});
+
+test('a replacing move loads a changed build in place of the current entry',async t=>{
+  const app=browser(t,{build:'B01'});await app.router.navigate('/practice',{replace:true});
+  assert.equal(app.documents.length,1);const [loaded]=app.documents;
+  assert.equal(loaded.kind,'replace');assert.equal(loaded.url.hash,'#/practice');assert.ok(loaded.url.searchParams.get('_sv')?.startsWith('B01-'));
+});
+
+test('a replacing move with an unchanged build stays in the document without a new entry',async t=>{
+  const app=browser(t);await app.router.navigate('/code',{replace:true});
+  assert.deepEqual(app.documents,[]);assert.deepEqual(app.rendered,['/code']);assert.equal(app.location.hash,'#/code');
+  assert.equal(app.cursor,1);assert.equal(app.router.index,1);assert.equal(app.history.state.splitVariable.index,1);
+});
+
+test('a replacing move still asks first when there are unsaved answers',async t=>{
+  let protects=0;const app=browser(t,{build:'B01',dirty:true,onProtect:async()=>{protects++;return false;}});
+  await app.router.navigate('/practice',{replace:true});assert.equal(protects,1);assert.deepEqual(app.documents,[]);assert.deepEqual(app.rendered,[]);
 });
 
 test('changed Back replaces the traversed entry as a document and keeps the intended route',async t=>{

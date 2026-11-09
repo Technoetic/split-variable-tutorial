@@ -104,14 +104,15 @@ export class PracticeScreen extends Screen {
     this.saveButton.disabled=this.saving||!this.ctx.storage.available;
   }
   check(){
-    const copy=this.copy();const summary=this.session.summary();
+    const copy=this.copy();const summary=this.session.summary();const perfect=summary.correct===summary.total;
     this.result.replaceChildren(
       el('h2',{id:'practice-result-title',textContent:copy.resultTitle}),
       el('p',{className:'score',textContent:fill(copy.score,{total:summary.total,correct:summary.correct})}),
       summary.unanswered?el('p',{textContent:fill(copy.unanswered,{n:summary.unanswered})}):null,
-      el('p',{textContent:summary.correct===summary.total?copy.scorePerfect:copy.scoreRetry})
+      // The retry hint only appears when something is actually wrong.
+      el('p',{textContent:perfect?copy.scorePerfect:summary.wrong?copy.scoreRetry:copy.scoreContinue})
     );
-    this.result.dataset.perfect=String(summary.correct===summary.total);
+    this.result.dataset.perfect=String(perfect);
     this.result.hidden=false;this.result.focus();
   }
   async save(){
@@ -162,6 +163,7 @@ export class PracticeScreen extends Screen {
     this.views.values().next().value?.heading.focus();
   }
   focusTarget(){
+    if(super.focusTarget())return true;
     const id=this.route.params.get('item');const view=id?this.views.get(id):null;
     if(!view)return false;
     view.heading.focus();this.keepsScroll=true;return true;

@@ -33,10 +33,12 @@ function fakeContent({failures=0,gate=null}={}){
 
 function setup(t){
   const dom=installDom();t.after(()=>dom.restore());
-  return async function mount(hash,{content=fakeContent(),memory=new MemoryStorage(),storage=new StorageService({storage:memory})}={}){
+  return async function mount(hash,{content=fakeContent(),memory=new MemoryStorage(),storage=new StorageService({storage:memory}),version,router}={}){
     const titles=[],toasts=[];const route=parseRoute(hash);const entry=routeFor(route.path);
     const root=dom.document.createElement('main');
-    const screen=new SCREENS[entry.screen]({content,storage,toast:message=>toasts.push(message),setTitle:value=>titles.push(value)},root,route,entry);
+    const ctx={content,storage,toast:message=>toasts.push(message),setTitle:value=>titles.push(value)};
+    if(version)ctx.version=version;if(router)ctx.router=router;
+    const screen=new SCREENS[entry.screen](ctx,root,route,entry);
     await screen.mount();
     return {screen,root,titles,toasts,memory,storage,content,document:dom.document};
   };
@@ -74,10 +76,41 @@ test('unknown paths render the not-found screen',async t=>{
 test('a failed load shows the error with a retry that recovers',async t=>{
   const mount=setup(t);const content=fakeContent({failures:1});
   t.mock.method(console,'error',()=>{});
-  const {root}=await mount('#/story',{content});
+  const {root,screen,document}=await mount('#/story',{content});
   const panel=root.querySelector('[data-state="error"]');assert.ok(panel);assert.match(text(panel),new RegExp(SHELL.loadError));
+  // The shell must not move focus away from Retry after an error.
+  assert.equal(screen.focusTarget(),true);assert.equal(document.activeElement,root.querySelector('button'));
   root.querySelector('button').click();await flush();
   assert.equal(root.querySelector('[data-state="error"]'),null);assert.equal(text(root.querySelector('h1')),tutorial.screens.story.title);
+  assert.equal(screen.focusTarget(),false);
+});
+
+test('a practice load error also keeps focus on Retry',async t=>{
+  const mount=setup(t);t.mock.method(console,'error',()=>{});
+  const {root,screen,document}=await mount('#/practice?item=memo',{content:fakeContent({failures:1})});
+  assert.ok(root.querySelector('[data-state="error"]'));assert.equal(screen.focusTarget(),true);assert.equal(document.activeElement,root.querySelector('button'));
+});
+
+test('retry loads the screen as a new document when the server already runs another build',async t=>{
+  const mount=setup(t);t.mock.method(console,'error',()=>{});
+  const navigations=[];const router={async navigate(route,options){navigations.push([route,options]);}};
+  const changed={refreshes:0,async refresh(){this.refreshes++;return {changed:true,buildId:'sv-newer',status:'available'};}};
+  const content=fakeContent({failures:1});
+  const {root}=await mount('#/code?view=after',{content,version:changed,router});
+  const calls=content.calls.length;assert.ok(root.querySelector('[data-state="error"]'));
+  root.querySelector('button').click();await flush();
+  assert.equal(changed.refreshes,1);assert.deepEqual(navigations,[['/code?view=after',{replace:true}]]);assert.equal(content.calls.length,calls);
+  assert.equal(root.querySelector('button').disabled,false);
+  // A pending build seen earlier while the check now fails does not switch documents: Retry loads again.
+  const offline={async refresh(){return {changed:true,buildId:'sv-newer',status:'unavailable'};}};
+  const second=await mount('#/story',{content:fakeContent({failures:1}),version:offline,router});
+  second.root.querySelector('button').click();await flush();
+  assert.equal(navigations.length,1);assert.equal(text(second.root.querySelector('h1')),tutorial.screens.story.title);
+  // Same build: Retry loads again in place.
+  const same={async refresh(){return {changed:false,buildId:null,status:'available'};}};
+  const third=await mount('#/story',{content:fakeContent({failures:1}),version:same,router});
+  third.root.querySelector('button').click();await flush();
+  assert.equal(navigations.length,1);assert.equal(text(third.root.querySelector('h1')),tutorial.screens.story.title);
 });
 
 test('a screen disposed while loading never renders the late data',async t=>{
@@ -95,6 +128,10 @@ test('the code view query picks a tab and unknown views fall back to before',asy
   assert.equal(current((await mount('#/code?view=parameter')).root),'받은 값 지키기');
   const fallback=(await mount('#/code?view=sideways')).root;assert.equal(current(fallback),'변경 전');
   assert.match(text(fallback),/let memo = order\.price \* order\.cups/);assert.match(text(fallback),/변경 전과 후의 출력이 같아요/);
+  // The legend names only the mark kinds shown in that view.
+  const legend=root=>root.querySelectorAll('.mark-legend li').map(item=>item.dataset.mark).sort();
+  assert.deepEqual(legend(fallback),['keep','smell']);
+  assert.deepEqual(legend((await mount('#/code?view=parameter')).root),['new','smell']);
 });
 
 test('a step screen marks its step and shows that step\'s code',async t=>{
@@ -102,7 +139,19 @@ test('a step screen marks its step and shows that step\'s code',async t=>{
   const {root}=await mount('#/steps/3');
   assert.equal(text(root.querySelector('.step-dot[aria-current="step"]')).startsWith('3'),true);
   assert.match(text(root),/todaySales \+= orderAmount;/);
-  const four=(await mount('#/steps/4')).root;assert.match(text(four),/변경 전과 후의 출력이 같아요/);
+  // The midway memo line is the next one to rename, not a mixed-meaning line.
+  const next=root.querySelector('.code-notes li[data-mark="next"]');assert.ok(next);
+  assert.match(text(next),/다음에 바꿀 곳/);assert.match(text(next),/let memo = order\.cups \* 2/);
+  assert.equal(root.querySelector('.code-notes li[data-mark="smell"]'),null);
+  const four=(await mount('#/steps/4')).root;assert.match(text(four),new RegExp(tutorial.ui.sameOutputStep));assert.doesNotMatch(text(four),/변경 전과 후의 출력이 같아요/);
+  assert.equal(four.querySelector('.eyebrow span[lang="en"]').textContent,tutorial.screens.steps.eyebrow);
+});
+
+test('English eyebrows are marked as English on a Korean page',async t=>{
+  const mount=setup(t);
+  for(const hash of ['#/','#/story','#/practice','#/code','#/summary','#/nope']){
+    const eyebrow=(await mount(hash)).root.querySelector('.eyebrow');assert.equal(eyebrow.getAttribute('lang'),'en',hash);
+  }
 });
 
 const radio=(root,name,value)=>root.querySelectorAll('input').find(input=>input.getAttribute('name')===name&&input.value===value);
@@ -168,7 +217,18 @@ test('grading reports the score and the unanswered count',async t=>{
   choose(root,'syrup-option','keep');choose(root,'syrup-reason','once');choose(root,'memo-option','keep');
   root.querySelectorAll('button').find(button=>text(button)===practice.copy.check).click();
   const result=root.querySelector('.result-panel');assert.equal(result.hidden,false);assert.equal(document.activeElement,result);
-  assert.match(text(result),/7문제 중 1문제를 맞혔어요/);assert.match(text(result),/아직 고르지 않은 문제가 5개 있어요/);
+  assert.match(text(result),/7문제 중 1문제를 맞혔어요/);assert.match(text(result),/아직 끝내지 않은 문제가 5개 있어요/);
+  assert.ok(text(result).includes(practice.copy.scoreRetry));
+});
+
+test('grading without wrong answers does not ask to retry wrong ones',async t=>{
+  const mount=setup(t);const {root}=await mount('#/practice');
+  // The right main answer with the follow-up still open counts as unfinished.
+  choose(root,'memo-option','split');
+  root.querySelectorAll('button').find(button=>text(button)===practice.copy.check).click();
+  const result=text(root.querySelector('.result-panel'));
+  assert.match(result,/7문제 중 0문제를 맞혔어요/);assert.match(result,/아직 끝내지 않은 문제가 7개 있어요/);
+  assert.ok(result.includes(practice.copy.scoreContinue));assert.ok(!result.includes(practice.copy.scoreRetry));
 });
 
 test('#/practice?item= focuses that item, and reset clears answers and the saved draft',async t=>{

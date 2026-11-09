@@ -1,6 +1,6 @@
 import {el,icon} from '../shared/dom.js';
 import {Screen} from './screen.js';
-import {pager,routeLink,screenHead} from './widgets.js';
+import {langOf,pager,routeLink,screenHead} from './widgets.js';
 
 export class SummaryScreen extends Screen {
   render({tutorial}){
@@ -28,7 +28,7 @@ export class NotFoundScreen extends Screen {
   render({tutorial}){
     const copy=tutorial.screens.notFound;
     this.root.replaceChildren(el('section',{className:'screen notfound-screen'},[
-      el('p',{className:'eyebrow',textContent:copy.eyebrow}),
+      el('p',{className:'eyebrow',lang:langOf(copy.eyebrow),textContent:copy.eyebrow}),
       el('h1',{textContent:copy.title}),
       el('p',{className:'lead',textContent:copy.body}),
       el('div',{className:'actions'},copy.ctas.map((cta,index)=>routeLink(cta.route,cta.label,index?'btn btn-secondary':'btn btn-primary')))

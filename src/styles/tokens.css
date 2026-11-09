@@ -27,6 +27,18 @@
   --code-bg: #2a211b;
   --code-text: #f6ede2;
   --code-muted: #b3a393;
+  /* Line marks sit on the dark code background in both themes, so they keep one set. */
+  --code-mark-smell: #ff9488;
+  --code-mark-smell-tint: rgb(255 148 136 / 15%);
+  --code-mark-new: #7bd6a2;
+  --code-mark-new-tint: rgb(123 214 162 / 14%);
+  --code-mark-keep: #93c6ef;
+  --code-mark-keep-tint: rgb(147 198 239 / 13%);
+  --code-mark-next: #f0905c;
+  --code-mark-next-tint: rgb(240 144 92 / 15%);
+  --code-mark-focus: #f2c46b;
+  --code-mark-focus-tint: rgb(242 196 107 / 15%);
+  --backdrop: rgb(20 12 8 / 55%);
   --shadow: 0 1px 2px rgb(60 40 20 / 7%), 0 10px 28px rgb(60 40 20 / 8%);
   --font: "Pretendard", "Segoe UI Variable", "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", system-ui, sans-serif;
   --mono: "Cascadia Code", "D2Coding", "SFMono-Regular", Consolas, "Liberation Mono", monospace;

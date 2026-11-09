@@ -97,7 +97,7 @@ test('shell copy, index.html and data ui strings agree',async()=>{
   const html=await read('index.html');const ui=tutorial.ui;
   for(const key of ['loading','loadError','loadTimeout','retry','startError','navError','updateBanner'])assert.equal(SHELL[key],ui[key],key);
   for(const key of ['description','descriptionUpdate','saveError'])assert.equal(SHELL.guard[key],ui.guard[key],key);
-  for(const text of [ui.skipLink,ui.navLabel,ui.noscript,ui.buildLabel,ui.loading,ui.guard.eyebrow,ui.guard.title,ui.guard.description,ui.guard.save,ui.guard.stay,ui.guard.discard,tutorial.meta.htmlTitle,tutorial.meta.description,tutorial.meta.footerMotto,tutorial.meta.footerSource,tutorial.meta.sourceUrl])assert.ok(html.includes(text),text);
+  for(const text of [ui.skipLink,ui.navLabel,ui.noscript,ui.buildLabel,ui.loading,ui.slowHint,ui.guard.eyebrow,ui.guard.title,ui.guard.description,ui.guard.save,ui.guard.stay,ui.guard.discard,tutorial.meta.htmlTitle,tutorial.meta.description,tutorial.meta.footerMotto,tutorial.meta.footerSource,tutorial.meta.sourceUrl])assert.ok(html.includes(text),text);
   const links=[...html.matchAll(/<a(?: class="(nav-extra)")? href="#([^"]+)" data-route="([^"]+)">([^<]+)<\/a>/g)].map(match=>({extra:!!match[1],path:match[3],label:match[4]}));
   assert.deepEqual(links.map(link=>({path:link.path,label:link.label})),tutorial.nav);
   assert.deepEqual(links.filter(link=>!link.extra).map(link=>link.path),tutorial.navPrimary);

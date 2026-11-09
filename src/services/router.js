@@ -62,7 +62,8 @@ export class Router {
     this.restoring=restoration;history.go(delta);
     return restoration.promise;
   }
-  async navigate(route,{historyInfo=null}={}){
+  // replace: the move takes the place of the current history entry (used by Retry).
+  async navigate(route,{historyInfo=null,replace=false}={}){
     if(this.protecting||this.abort.signal.aborted)return;
     const sequence=++this.sequence;const target=routeUrl(route,this.baseUrl);
     // A browser traversal has already moved the address bar. A newer link must
@@ -79,10 +80,10 @@ export class Router {
       this.protecting=true;let proceed;
       try{proceed=await this.onProtect({target,changed:!!this.version.pendingBuild});}finally{this.protecting=false;}
       if(!proceed)return;
-      return this.navigate(route,{historyInfo});
+      return this.navigate(route,{historyInfo,replace});
     }
     // The read happens immediately before every document/history transition.
-    if(this.unsafe())return this.navigate(route,{historyInfo});
+    if(this.unsafe())return this.navigate(route,{historyInfo,replace});
     if(historyInfo?.restored){
       this.approvedHistory={hash:target.hash,reload:decision.kind==='reload'};
       const delta=historyInfo.index-this.index;
@@ -90,11 +91,11 @@ export class Router {
       this.approvedHistory=null;
     }
     if(decision.kind==='reload'){
-      this.loadDocument(target.href,!!historyInfo);
+      this.loadDocument(target.href,!!historyInfo||replace);
       return;
     }
     if(historyInfo){await this.commit(target.hash,historyInfo.index);return;}
-    const same=location.hash===target.hash;const index=same?this.index:this.index+1;
+    const same=replace||location.hash===target.hash;const index=same?this.index:this.index+1;
     history[same?'replaceState':'pushState']({...history.state,splitVariable:{key:this.key,index}},'',target.href);
     await this.commit(target.hash,index);
   }

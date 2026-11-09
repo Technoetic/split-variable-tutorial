@@ -25,6 +25,10 @@ test('data-only changes keep the build ID; app changes replace it',async t=>{
   const third=await build();
   assert.notEqual(third,first);
   const html=await readFile(path.join(fixture,'dist/index.html'),'utf8');assert.ok(html.includes(third));assert.ok(!html.includes('__BUILD_ID__'));
+  // The build script shapes the emitted bytes, so changing it also replaces the ID.
+  const script=path.join(fixture,'scripts/build.mjs');await writeFile(script,(await readFile(script,'utf8'))+'\n// build script change\n');
+  const fourth=await build();
+  assert.notEqual(fourth,third);
 });
 
 test('a data file that breaks the step edit chain stops the build',async t=>{

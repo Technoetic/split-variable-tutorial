@@ -7,7 +7,7 @@ import {SHELL} from '../shared/shell-copy.js';
 export class Screen {
   constructor(ctx,root,route,entry){
     this.ctx=ctx;this.root=root;this.route=route;this.entry=entry;
-    this.abort=new AbortController();this.closed=false;this.loadSequence=0;this.data=null;
+    this.abort=new AbortController();this.closed=false;this.loadSequence=0;this.data=null;this.errorShown=false;
   }
   get signal(){return this.abort.signal;}
   needs(){return ['tutorial'];}
@@ -15,9 +15,11 @@ export class Screen {
   async save(){}
   async discard(){}
   async mount(){await this.load();}
+  // The error panel has already moved focus to its Retry button.
+  focusTarget(){return this.errorShown;}
   async load(){
     const sequence=++this.loadSequence;
-    this.showLoading();
+    this.errorShown=false;this.showLoading();
     try{
       const names=this.needs();
       const values=await Promise.all(names.map(name=>this.ctx.content.load(name,{signal:this.signal})));
@@ -42,9 +44,30 @@ export class Screen {
     this.root.replaceChildren(el('section',{className:'state-panel','data-state':'loading',role:'status'},[el('span',{className:'spinner','aria-hidden':'true'}),el('p',{textContent:SHELL.loading})]));
   }
   showError(error){
-    const retry=el('button',{type:'button',className:'btn btn-primary',textContent:SHELL.retry,onclick:async()=>{retry.disabled=true;if(await this.load())this.root.focus({preventScroll:true});}});
+    const retry=el('button',{type:'button',className:'btn btn-primary',textContent:SHELL.retry,onclick:async()=>{
+      retry.disabled=true;
+      if(await this.retry())this.root.focus({preventScroll:true});else retry.disabled=false;
+    }});
     this.root.replaceChildren(el('section',{className:'state-panel','data-state':'error',role:'alert'},[el('p',{textContent:error?.userMessage||SHELL.loadError}),retry]));
-    retry.focus();
+    this.errorShown=true;retry.focus();
+  }
+  // Data is fetched fresh but the running code is not. When the server already runs a
+  // different build, the data may only fit that build, so Retry loads this screen as
+  // a new document (through the router and its unsaved-work checks) instead of
+  // repeating a load that cannot pass. Otherwise it simply loads again.
+  async retry(){
+    const {version,router}=this.ctx;
+    if(version&&router){
+      let result=null;
+      try{result=await version.refresh();}catch{}
+      if(this.closed)return false;
+      if(result?.status==='available'&&result.changed){
+        const query=this.route.params.toString();
+        await router.navigate(this.route.path+(query?'?'+query:''),{replace:true});
+        return false;
+      }
+    }
+    return this.load();
   }
   render(){}
   dispose(){this.closed=true;this.abort.abort();}

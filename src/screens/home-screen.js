@@ -1,6 +1,6 @@
 import {el,icon} from '../shared/dom.js';
 import {Screen} from './screen.js';
-import {pager,routeLink,slipView} from './widgets.js';
+import {langOf,pager,routeLink,slipView} from './widgets.js';
 
 export class HomeScreen extends Screen {
   async render({tutorial}){
@@ -9,7 +9,7 @@ export class HomeScreen extends Screen {
     this.root.replaceChildren(el('section',{className:'screen home-screen'},[
       el('div',{className:'home-hero'},[
         el('div',{className:'home-copy'},[
-          el('p',{className:'eyebrow',textContent:copy.eyebrow}),
+          el('p',{className:'eyebrow',lang:langOf(copy.eyebrow),textContent:copy.eyebrow}),
           el('h1',{className:'home-title',textContent:copy.title}),
           el('p',{className:'lead',textContent:copy.lead}),
           el('div',{className:'actions'},[

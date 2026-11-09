@@ -1,16 +1,19 @@
-import test from 'node:test';
+import test,{after} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,readFile,readdir} from 'node:fs/promises';
+import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
-import {APP} from '../scripts/build.mjs';
 import {retainAssets} from '../scripts/retain-assets.mjs';
 const sha=body=>createHash('sha256').update(body).digest('hex');
 const old=Buffer.from('export const oldBuild=true;\n');
 const baseUrl='https://example.test/split-variable-tutorial/';
 const manifest={schema:1,buildId:'sv-old-build',sourceCommit:'1'.repeat(40),files:{'assets/main.sv-old-build.js':sha(old),'index.html':sha('old html'),'version.json':sha('v'),'data/tutorial.json':sha('d1'),'data/practice.json':sha('d2'),'data/code.json':sha('d3')}};
 const response=(value,status=200)=>new Response(value,{status});
-async function temp(){return mkdtemp(path.join(APP,'.test-build-retain-'));}
+// Output folders live in the system temp folder and are removed after the file's tests.
+const made=[];
+async function temp(){const dir=await mkdtemp(path.join(tmpdir(),'split-variable-retain-'));made.push(dir);return dir;}
+after(async()=>{for(const dir of made)await rm(dir,{recursive:true,force:true});});
 function fetcher({body=manifest,version='sv-old-build',bytes=old}={}){
   return async url=>{
     const u=new URL(url);assert.equal(u.origin,'https://example.test');assert.ok(u.searchParams.has('_retain'));

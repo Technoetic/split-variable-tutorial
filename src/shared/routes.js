@@ -7,6 +7,8 @@ export function parseRoute(value=''){
 export function routeUrl(value,baseUrl){
   const raw=String(value).replace(/^#/,'')||'/';
   const parsed=parseRoute(raw);const url=new URL(baseUrl);
-  url.hash=parsed.path==='/missing'?'/missing':parsed.path+(parsed.params.size?'?'+parsed.params.toString():'');
+  // toString() rather than URLSearchParams.size, which older browsers do not have.
+  const query=parsed.params.toString();
+  url.hash=parsed.path==='/missing'?'/missing':parsed.path+(query?'?'+query:'');
   return url;
 }

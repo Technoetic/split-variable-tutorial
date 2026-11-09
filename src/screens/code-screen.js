@@ -16,6 +16,9 @@ export class CodeScreen extends Screen {
     // Before and after views compare against the other end of the same example.
     const other=findStage(example,view.stages.includes('before')?'after':'before');
     const outputs=stages.length>1?[stages[0],stages.at(-1)]:other?[stages[0],other]:null;
+    // The legend lists only the mark kinds that appear in the stages on screen.
+    const used=new Set(stages.flatMap(stage=>stage.marks.map(mark=>mark.kind)));
+    const legend=Object.entries(code.markKinds).filter(([kind])=>used.has(kind));
     this.root.replaceChildren(el('section',{className:'screen code-screen'},[
       screenHead(copy),
       el('nav',{className:'view-tabs','aria-label':copy.title},copy.views.map(entry=>{
@@ -26,7 +29,7 @@ export class CodeScreen extends Screen {
       el('section',{className:'code-example'},[
         el('h2',{textContent:example.title}),
         el('p',{className:'muted',textContent:example.summary}),
-        el('ul',{className:'mark-legend'},Object.entries(code.markKinds).map(([kind,entry])=>el('li',{'data-mark':kind,textContent:entry.label}))),
+        legend.length?el('ul',{className:'mark-legend'},legend.map(([kind,entry])=>el('li',{'data-mark':kind,textContent:entry.label}))):null,
         stages.map(stage=>el('div',{className:'stage'},[
           codeBlock(stage.source,{marks:stage.marks,markKinds:code.markKinds,ui,title:stage.label}),
           outputView(stage.expectedOutput,stage.label+' · '+copy.outputLabel)

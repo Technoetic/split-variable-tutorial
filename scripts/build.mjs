@@ -21,9 +21,11 @@ export async function build({outDir='dist',tag=''}={}){
   const template=await readFile(path.join(APP,'index.html'),'utf8');
   const sources=await Promise.all(jsFiles.map(async file=>({file,relative:posix(path.relative(path.join(APP,'src'),file)),text:await readFile(file,'utf8')})));
   const svgs=await Promise.all(SVGS.map(async name=>({name,text:await readFile(path.join(APP,'assets',name+'.svg'),'utf8')})));
-  // The ID covers the page, styles, every module and the artwork. Data files stay
-  // out: a data-only update keeps the build and is fetched fresh by the app.
-  const buildId='sv-'+digest(template+css.join('\n')+sources.map(file=>file.relative+'\n'+file.text).join('\n')+svgs.map(svg=>svg.text).join('\n')).slice(0,12)+(tag?'-'+tag.toLowerCase():'');
+  const builder=await readFile(fileURLToPath(import.meta.url),'utf8');
+  // The ID covers the page, styles, every module, the artwork and this script, which
+  // shapes the emitted bytes. Data files stay out: a data-only update keeps the
+  // build and is fetched fresh by the app.
+  const buildId='sv-'+digest(builder+'\n'+template+css.join('\n')+sources.map(file=>file.relative+'\n'+file.text).join('\n')+svgs.map(svg=>svg.text).join('\n')).slice(0,12)+(tag?'-'+tag.toLowerCase():'');
   const data=Object.fromEntries(await Promise.all(DATA_FILES.map(async name=>[name,JSON.parse(await readFile(path.join(APP,'data',name+'.json'),'utf8'))])));
   validateBundle(data);
   const mapping=new Map(sources.map(file=>[file.relative,file.relative.replace(/\.js$/,'.'+buildId+'.js')]));

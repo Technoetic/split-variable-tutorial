@@ -3,7 +3,7 @@ import {fill} from '../shared/format.js';
 import {findExample,findStage,sameOutput} from '../tutorial/code-model.js';
 import {STEP_COUNT} from '../shared/route-table.js';
 import {Screen} from './screen.js';
-import {codeBlock,editsView,outputView,pager,routeLink,screenHead,slipView} from './widgets.js';
+import {codeBlock,editsView,langOf,outputView,pager,routeLink,screenHead,slipView} from './widgets.js';
 
 export class StepsScreen extends Screen {
   render({tutorial}){
@@ -40,12 +40,12 @@ export class StepScreen extends Screen {
       ref.showOutput&&stage?el('div',{className:'output-compare'},[
         compare?outputView(compare.expectedOutput,compare.label+' · '+tutorial.screens.code.outputLabel):null,
         outputView(stage.expectedOutput,stage.label+' · '+tutorial.screens.code.outputLabel),
-        compare&&sameOutput(compare.expectedOutput,stage.expectedOutput)?el('p',{className:'same-output'},[icon('check'),' ',tutorial.screens.code.sameOutput]):null
+        compare&&sameOutput(compare.expectedOutput,stage.expectedOutput)?el('p',{className:'same-output'},[icon('check'),' ',ui.sameOutputStep]):null
       ]):null
     ];
     this.root.replaceChildren(el('section',{className:'screen step-screen'},[
       el('header',{className:'screen-head'},[
-        el('p',{className:'eyebrow',textContent:steps.eyebrow+' · '+fill(ui.stepProgress,{n:item.n,total:STEP_COUNT})}),
+        el('p',{className:'eyebrow'},[el('span',{lang:langOf(steps.eyebrow),textContent:steps.eyebrow}),' · '+fill(ui.stepProgress,{n:item.n,total:STEP_COUNT})]),
         el('h1',{textContent:item.title}),
         el('p',{className:'lead',textContent:item.body})
       ]),

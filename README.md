@@ -7,16 +7,18 @@
 Martin Fowler의 리팩토링 카탈로그에 실린 Split Variable을 카페 주문표 비유로 풀어 쓴
 한국어 인터랙티브 튜토리얼입니다. 메모 칸 하나에 주문 금액과 대기 시간이 번갈아 적히는
 이야기로 냄새를 찾고, 뜻마다 이름 붙은 칸으로 나누는 순서를 따라가며, 나누지 않아도 되는
-칸(합계·개수·반복 차례)을 가려냅니다. 코드는 마지막에 조금만 나옵니다.
+칸(합계·개수·반복 차례)을 가려냅니다. 코드는 단계마다 접어 두어 원할 때만 열어 보고,
+코드 화면에서 한꺼번에 볼 수 있습니다.
 
-English: a Korean, mostly code-free interactive tutorial for Martin Fowler's Split Variable
-refactoring, told through the memo slot on a cafe order slip.
+English: a Korean interactive tutorial for Martin Fowler's Split Variable refactoring,
+told through the memo slot on a cafe order slip. The code stays folded until you open it.
 
 - 이야기 → 냄새 찾기 → 나누는 순서 5단계 → 나누지 않는 칸 → 받은 값 지키기 → 연습 → 코드 → 정리
 - 단계마다 주소가 있어 바로 열 수 있습니다 (예: `#/steps/3`, `#/code?view=after`)
 - 연습 7문제: 고르는 즉시 설명, 새 칸 이름·그대로 두는 이유까지 확인, 채점 요약
 - 연습 답과 메모는 이 브라우저에 임시 저장하고 다음에 이어서 풉니다
-- 밝은·어두운 테마, 움직임 줄이기, 키보드 조작, 390px 폭 화면 지원
+- 밝은·어두운 테마, 움직임 줄이기, 390px 폭 화면 지원
+- 키보드로 조작할 수 있게 링크·버튼·라디오 같은 기본 HTML 컨트롤을 썼습니다
 
 ## 화면 주소
 
@@ -46,8 +48,8 @@ Node.js 22 이상이 필요하며 설치할 패키지는 없습니다.
     npm test
     npm run build
 
-`npm run build`는 `dist/`에 정적 파일을 만듭니다. HTML·CSS·모든 JS 모듈·그림으로 build ID를
-계산하고, 자산 파일 이름마다 그 ID를 붙입니다. `data/`의 내용은 build ID에 넣지 않습니다.
+`npm run build`는 `dist/`에 정적 파일을 만듭니다. HTML·CSS·모든 JS 모듈·그림과 빌드 스크립트로
+build ID를 계산하고, 자산 파일 이름마다 그 ID를 붙입니다. `data/`의 내용은 build ID에 넣지 않습니다.
 내용만 고친 배포는 같은 build로 남고, 앱이 화면을 열 때마다 데이터를 새로 받아 옵니다.
 GitHub Actions는 `main`에 push될 때 시험 → 직전 배포 자산 보존 → 빌드 → 파일 목록 작성 →
 Pages 배포 순서로 진행합니다.
@@ -61,6 +63,8 @@ Pages 배포 순서로 진행합니다.
 화면을 옮길 때, 창으로 돌아올 때, 탭이 다시 보일 때, 뒤로 가기 캐시에서 복원될 때 확인합니다.
 새 버전이 있으면 저장하지 않은 답이 없는 다음 화면 이동에서 그 주소를 새 문서로 불러옵니다.
 저장하지 않은 답이 있거나 저장 중이면 먼저 묻고, 확인에 실패해도 지금 화면을 계속 쓸 수 있습니다.
+내용을 불러오지 못한 화면에서 ‘다시 시도’를 누르면 먼저 새 배포가 있는지 확인하고, 있으면 그 화면을
+새 문서로 불러옵니다.
 배포할 때 직전 build의 자산도 함께 남겨 이미 열린 탭이 깨지지 않게 합니다.
 GitHub Pages는 파일을 몇 분 동안 캐시할 수 있어서 새 배포가 늦게 보일 수 있습니다.
 

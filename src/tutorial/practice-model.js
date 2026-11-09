@@ -58,23 +58,27 @@ export function gradeItem(item,answer=emptyAnswer()){
   return {status:correct?'correct':'followup-wrong',optionCorrect:true,followUpComplete:true,followUpCorrect:correct};
 }
 
+// unanswered: nothing picked, or the follow-up still open. wrong: a wrong option or follow-up.
 export function summarize(practice,answerFor){
-  let correct=0,unanswered=0;
+  let correct=0,unanswered=0,wrong=0;
   for(const item of practice.items){
     const {status}=gradeItem(item,answerFor(item.id));
     if(status==='correct')correct++;
     else if(status==='unanswered'||status==='followup')unanswered++;
+    else wrong++;
   }
-  return {total:practice.items.length,correct,unanswered};
+  return {total:practice.items.length,correct,unanswered,wrong};
 }
 
 // Independent judgement used to cross-check the authored answers.
 // profile: {writes: [meaning per write], role: 'accumulate'|'count'|'loop'|null, received: boolean}
 export function decideSlot({writes,role=null,received=false}){
   if(!Array.isArray(writes)||!writes.length)throw Error('A slot needs at least one write');
-  if(role==='accumulate'||role==='count'||role==='loop')return {action:'keep',reason:role};
   const meanings=[...new Set(writes)];
-  if(received&&writes.length>1)return {action:'new-slot',slots:meanings.length-1};
+  // A received value (parameter) written again keeps its value and gets a new slot,
+  // even when the later writes look like a running total. This rule comes first.
+  if(received&&writes.length>1)return {action:'new-slot',slots:Math.max(1,meanings.length-1)};
+  if(role==='accumulate'||role==='count'||role==='loop')return {action:'keep',reason:role};
   if(meanings.length>1)return {action:'split',slots:meanings.length};
   return {action:'keep',reason:writes.length===1?'once':null};
 }

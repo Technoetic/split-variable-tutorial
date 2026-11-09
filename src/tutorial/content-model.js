@@ -54,9 +54,9 @@ const QUIZ=(value,path)=>{
 };
 const STEP={n:int(1,STEP_COUNT),path:ROUTE,title:T(120),body:T(),codeNote:opt(T()),check:T(),slots:list(SLOT,1,6),reads:opt(list({from:T(40),to:T(40)},1,4)),
   code:{example:ID,stage:nul(ID),edits:list(EDIT,0,8),focus:list({contains:T(160),note:T(160)},0,8),showOutput:opt(bool),compareWith:opt(ID)}};
-const UI={skipLink:T(),navLabel:T(),stepNavLabel:T(),prev:T(),next:T(),stepProgress:T(),loading:T(),loadError:T(),loadTimeout:T(),retry:T(),startError:T(),navError:T(),noscript:T(),buildLabel:T(),updateBanner:T(),
+const UI={skipLink:T(),navLabel:T(),stepNavLabel:T(),prev:T(),next:T(),stepProgress:T(),loading:T(),slowHint:T(),loadError:T(),loadTimeout:T(),retry:T(),startError:T(),navError:T(),noscript:T(),buildLabel:T(),updateBanner:T(),
   guard:{eyebrow:T(),title:T(),description:T(),descriptionUpdate:T(),save:T(),stay:T(),discard:T(),saveError:T()},
-  correctTag:T(),wrongTag:T(),codePeek:T(),codeNoteLabel:T(),checkLabel:T(),editsLabel:T(),removedLine:T(),addedLine:T(),focusLabel:T(),marksTitle:T(),lineLabel:T(),stepListLabel:T(),frameLabel:T(),pagerLabel:T(),
+  correctTag:T(),wrongTag:T(),codePeek:T(),codeNoteLabel:T(),sameOutputStep:T(),checkLabel:T(),editsLabel:T(),removedLine:T(),addedLine:T(),focusLabel:T(),marksTitle:T(),lineLabel:T(),stepListLabel:T(),frameLabel:T(),pagerLabel:T(),
   mappingHeaders:{cafe:T(),code:T(),note:T()},
   visual:{slipTitle:T(),boardTitle:T(),empty:T(),meaning:T(),previous:T(),writes:T(),reads:T(),states:Object.fromEntries(['empty','written','overwritten','unclear','mixed','new','kept'].map(state=>[state,T(40)]))}};
 const SCREENS={
@@ -113,7 +113,7 @@ const FOLLOW_UP=(value,path)=>{
   }else if(value.type==='reason')check(value,{prompt:T(),accept:list(ID,1,4),feedback:{correct:T(),wrong:T()}},path);
   else fail(path+'.type','names or reason expected');
 };
-const PRACTICE_COPY=['noteLabel','notePlaceholder','noteCounter','check','save','reset','next','followUpNames','followUpReason','saving','saved','savedAt','unsaved','saveError','restored','loadError','storageUnavailable','resetConfirmTitle','resetConfirmBody','resetYes','resetNo','unanswered','score','scorePerfect','scoreRetry','correctTag','wrongTag','itemLabel','trailLabel','slotLegend','resultTitle'];
+const PRACTICE_COPY=['noteLabel','notePlaceholder','noteCounter','check','save','reset','next','followUpNames','followUpReason','saving','saved','savedAt','unsaved','saveError','restored','loadError','storageUnavailable','resetConfirmTitle','resetConfirmBody','resetYes','resetNo','unanswered','score','scorePerfect','scoreRetry','scoreContinue','correctTag','wrongTag','itemLabel','trailLabel','slotLegend','resultTitle'];
 
 export function validatePractice(value){
   check(value,{schema:oneOf(1),reasons:list({id:ID,label:T(80)},1,8),
@@ -130,10 +130,11 @@ export function validatePractice(value){
   return value;
 }
 
-const STAGE={id:ID,label:T(40),source:T(6000),expectedOutput:list(T(300),1,12),showInCodeView:opt(bool),marks:list({line:int(1,400),contains:T(160),kind:oneOf('smell','new','keep'),note:T(200)},0,16)};
+const MARK_KINDS=['smell','new','keep','next'];
+const STAGE={id:ID,label:T(40),source:T(6000),expectedOutput:list(T(300),1,12),showInCodeView:opt(bool),marks:list({line:int(1,400),contains:T(160),kind:oneOf(...MARK_KINDS),note:T(200)},0,16)};
 export function validateCode(value){
   check(value,{schema:oneOf(1),examples:list({id:ID,title:T(80),summary:T(),stages:list(STAGE,1,6),checks:list({id:ID,note:opt(T(600)),baseStage:ID,applySteps:list(int(1,STEP_COUNT),1,STEP_COUNT),expectError:T(40)},0,6)},1,6),
-    markKinds:{smell:{label:T(40)},new:{label:T(40)},keep:{label:T(40)}}},'code');
+    markKinds:Object.fromEntries(MARK_KINDS.map(kind=>[kind,{label:T(40)}]))},'code');
   unique(value.examples.map(example=>example.id),'code.examples');
   value.examples.forEach((example,index)=>{
     unique(example.stages.map(stage=>stage.id),`code.examples[${index}].stages`);
